@@ -1,0 +1,73 @@
+;
+; USBKmDriver.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+;Class=USBDevice
+;ClassGuid={88BAE032-5A81-49f0-BC3D-A4FF138216D6}
+Class=Ports
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318}
+Provider=%ManufacturerName%
+CatalogFile=USBKmDriver.cat
+DriverVer=
+PnpLockDown=1
+
+[DestinationDirs]
+DefaultDestDir = 13
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+USBKmDriver.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$.10.0...16299 ; %13% support introduced in build 16299
+
+[Standard.NT$ARCH$.10.0...16299]
+;%USBKmDriver.DeviceDesc%=USBKmDriver_Device, USB\VID_vvvv&PID_pppp USB\VID_067B&PID_2303
+%USBKmDriver.DeviceDesc%=USBKmDriver_Device, USB\VID_067B&PID_2303
+
+[USBKmDriver_Device.NT]
+CopyFiles=File_Copy
+
+[File_Copy]
+USBKmDriver.sys
+
+[USBKmDriver_Device.NT.HW]
+AddReg=USBKmDriver_AddReg
+
+[USBKmDriver_AddReg]
+; By default, USBDevice class uses iProduct descriptor to name the device
+; Uncomment for this device to use %USBKmDriver.DeviceDesc%
+;HKR,,FriendlyName,,%USBKmDriver.DeviceDesc%
+
+;-------------- Service installation
+[USBKmDriver_Device.NT.Services]
+AddService = USBKmDriver,%SPSVCINST_ASSOCSERVICE%, USBKmDriver_Service_Inst
+
+; -------------- USBKmDriver driver install sections
+[USBKmDriver_Service_Inst]
+DisplayName    = %USBKmDriver.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\USBKmDriver.sys
+
+[USBKmDriver_Device.NT.Wdf]
+KmdfService =  USBKmDriver, USBKmDriver_wdfsect
+
+[USBKmDriver_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "USBKmDriver Installation Disk"
+USBKmDriver.DeviceDesc = "USBKmDriver Device"
+USBKmDriver.SVCDESC = "USBKmDriver Service"
